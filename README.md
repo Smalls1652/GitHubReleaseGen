@@ -51,6 +51,10 @@ The compiled binary will be located in the `./build/ConsoleApp` directory in the
 
 ### ⬇️ Installing
 
+> ⚠️ **Note:**
+> 
+> These binaries are not signed. Depending on your system and security requirements, the binary may be blocked from running.
+
 1. Download the latest release for your platform on [the releases page](https://github.com/Smalls1652/GitHubReleaseGen/releases).
 2. Put the binary in a directory that is in your `PATH` environment variable.
 
