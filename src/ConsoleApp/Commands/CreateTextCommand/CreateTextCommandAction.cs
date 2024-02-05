@@ -22,8 +22,8 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
     public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken = default)
     {
         // Parse the command line arguments
-        string baseTag = string.Empty;
-        string newTag = string.Empty;
+        string baseTag;
+        string newTag;
         string? repoOwner = null;
         string? repo = null;
         string? localRepoPath = null;
@@ -104,7 +104,10 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
 
         // Filter the pull requests to only include those
         // that have a merge commit associated with a pull request.
-        GitHubPullRequest[] pullRequestsSinceTag = Array.FindAll(pullRequests, pr => pr.MergeCommit.ShortOid is not null && commitsSinceTag.Contains(pr.MergeCommit.ShortOid));
+        GitHubPullRequest[] pullRequestsSinceTag = Array.FindAll(
+            array: pullRequests,
+            match: pr => pr.MergeCommit.ShortOid is not null && commitsSinceTag.Contains(pr.MergeCommit.ShortOid)
+        );
 
         Array.Sort(
             array: pullRequestsSinceTag,
