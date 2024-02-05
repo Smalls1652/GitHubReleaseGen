@@ -62,7 +62,7 @@ jobs:
               uses: actions/upload-artifact@v4
               if: ${{ runner.os == 'Windows' }}
               with:
-                name: "gh-releasegen_win-x64_${{ github.ref_type == 'tag' && github.ref || github.sha }}"
+                name: "gh-releasegen_win-x64_${{ github.ref_type == 'tag' && github.ref_name || github.sha }}"
                 path: ${{ github.workspace }}/build/ConsoleApp/**/*
                 if-no-files-found: error
 
@@ -70,7 +70,7 @@ jobs:
               uses: actions/upload-artifact@v4
               if: ${{ runner.os == 'Linux' }}
               with:
-                name: "gh-releasegen_linux-x64_${{ github.ref_type == 'tag' && github.ref || github.sha }}"
+                name: "gh-releasegen_linux-x64_${{ github.ref_type == 'tag' && github.ref_name || github.sha }}"
                 path: ${{ github.workspace }}/build/ConsoleApp/**/*
                 if-no-files-found: error
 
@@ -78,7 +78,7 @@ jobs:
               uses: actions/upload-artifact@v4
               if: ${{ runner.os == 'macOS' }}
               with:
-                name: "gh-releasegen_osx-arm64_${{ github.ref_type == 'tag' && github.ref || github.sha }}"
+                name: "gh-releasegen_osx-arm64_${{ github.ref_type == 'tag' && github.ref_name || github.sha }}"
                 path: ${{ github.workspace }}/build/ConsoleApp-arm64/**/*
                 if-no-files-found: error
 
@@ -86,6 +86,6 @@ jobs:
               uses: actions/upload-artifact@v4
               if: ${{ runner.os == 'macOS' }}
               with:
-                name: "gh-releasegen_osx-x64_${{ github.ref_type == 'tag' && github.ref || github.sha }}"
+                name: "gh-releasegen_osx-x64_${{ github.ref_type == 'tag' && github.ref_name || github.sha }}"
                 path: ${{ github.workspace }}/build/ConsoleApp-x64/**/*
                 if-no-files-found: error
