@@ -2,6 +2,18 @@
 
 This repo is for a CLI tool to create text for a release on GitHub.
 
+> **_"Doesn't GitHub have that built into the release page?"_**
+
+Yup! It's very handy, but... I found it lacking for my own use. I like to separate pull requests in the output into their own section based on what the pull request was doing.
+
+For example, this is what the native _"generate release notes"_ tool on GitHub does:
+
+![Native "generate release notes" output on GitHub](.github/images/release-text_native.png)
+
+This is a sample of what this CLI tool generates:
+
+![Output of the 'gh-releasegen' CLI tool](.github/images/release-text_using-gh-releasegen.png)
+
 ## 🏗️ Building from source
 
 ### 🧰 Pre-requisites
