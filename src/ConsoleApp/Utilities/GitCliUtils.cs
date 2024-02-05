@@ -40,8 +40,7 @@ public static partial class GitCliUtils
             throw new InvalidOperationException($"Tag '{baseTag}' does not exist.");
         }
 
-        string resolvedNewTag = string.Empty;
-
+        string resolvedNewTag;
         if (newTag is null)
         {
             resolvedNewTag = "HEAD";
@@ -52,6 +51,8 @@ public static partial class GitCliUtils
             {
                 throw new InvalidOperationException($"Tag '{newTag}' does not exist.");
             }
+
+            resolvedNewTag = newTag;
         }
 
         ProcessStartInfo processStartInfo = new(
