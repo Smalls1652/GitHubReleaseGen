@@ -2,6 +2,10 @@
 name: ConsoleApp / Create artifacts
 on:
     workflow_dispatch:
+    push:
+        tags: 
+            - 'v*.*.*'
+            - 'v*.*.*-*'
 
 permissions:
     packages: read
