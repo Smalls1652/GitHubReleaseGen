@@ -8,6 +8,19 @@ namespace GitHubReleaseGen.ConsoleApp.Utilities;
 /// </summary>
 public static partial class GitCliUtils
 {
+    private static ProcessStartInfo CreateGitProcessStartInfo(string[] arguments, string? workingDirectory)
+    {
+        return new(
+            fileName: "git",
+            arguments: arguments
+        )
+        {
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory
+        };
+    }
+
     /// <summary>
     /// Gets the commits between two tags.
     /// </summary>
@@ -55,20 +68,15 @@ public static partial class GitCliUtils
             resolvedNewTag = newTag;
         }
 
-        ProcessStartInfo processStartInfo = new(
-            fileName: "git",
+        ProcessStartInfo processStartInfo = CreateGitProcessStartInfo(
             arguments: [
                 "log",
                 $"{baseTag}..{resolvedNewTag}",
                 "--reverse",
                 "--oneline"
-            ]
-        )
-        {
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            WorkingDirectory = repoPath ?? Environment.CurrentDirectory
-        };
+            ],
+            workingDirectory: repoPath
+        );
 
         Process process = Process.Start(processStartInfo) ?? throw new InvalidOperationException("Failed to start git log process.");
 
@@ -105,19 +113,14 @@ public static partial class GitCliUtils
     /// <exception cref="InvalidOperationException">An error occurred while running the 'git tag' command.</exception>
     public static async Task<bool> VerifyTagExistsAsync(string tagName, string? repoPath)
     {
-        ProcessStartInfo processStartInfo = new(
-            fileName: "git",
+        ProcessStartInfo processStartInfo = CreateGitProcessStartInfo(
             arguments: [
                 "tag",
                 "--list",
                 tagName
-            ]
-        )
-        {
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            WorkingDirectory = repoPath ?? Environment.CurrentDirectory
-        };
+            ],
+            workingDirectory: repoPath
+        );
 
         Process process = Process.Start(processStartInfo) ?? throw new InvalidOperationException("Failed to start git tag process.");
 
