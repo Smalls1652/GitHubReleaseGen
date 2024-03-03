@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using GitHubReleaseGen.ConsoleApp.Models.Git;
 
 namespace GitHubReleaseGen.ConsoleApp.Utilities;
 
@@ -17,8 +18,25 @@ public static partial class GitCliUtils
         {
             CreateNoWindow = true,
             RedirectStandardOutput = true,
+            RedirectStandardError = true,
             WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory
         };
+    }
+
+    private static async Task<Process> RunGitProcessAsync(ProcessStartInfo processStartInfo)
+    {
+        Process process = Process.Start(processStartInfo) ?? throw new InvalidOperationException("Failed to start git process.");
+
+        await process.WaitForExitAsync();
+
+        if (process.ExitCode != 0)
+        {
+            string errorOutput = await process.StandardError.ReadToEndAsync();
+
+            throw new GitCliException("An error occurred while running the 'git' command.", errorOutput, GitCliExceptionType.Unknown);
+        }
+
+        return process;
     }
 
     /// <summary>
@@ -48,30 +66,30 @@ public static partial class GitCliUtils
     /// <exception cref="InvalidOperationException">An error occurred while running the 'git log' command.</exception>
     public static async Task<List<string>> GetCommitsFromTagAsync(string baseTag, string? newTag, string? repoPath)
     {
-        if (!await VerifyTagExistsAsync(baseTag, repoPath))
+        CommitInfo baseTagInfo;
+        try
         {
-            throw new InvalidOperationException($"Tag '{baseTag}' does not exist.");
+            baseTagInfo = await GetCommitInfoAsync(baseTag, repoPath);
+        }
+        catch (Exception)
+        {
+            throw;
         }
 
-        string resolvedNewTag;
-        if (newTag is null)
+        CommitInfo newTagInfo;
+        try
         {
-            resolvedNewTag = "HEAD";
+            newTagInfo = await GetCommitInfoAsync(newTag ?? "HEAD", repoPath);
         }
-        else
+        catch (Exception)
         {
-            if (!await VerifyTagExistsAsync(newTag, repoPath))
-            {
-                throw new InvalidOperationException($"Tag '{newTag}' does not exist.");
-            }
-
-            resolvedNewTag = newTag;
+            throw;
         }
 
         ProcessStartInfo processStartInfo = CreateGitProcessStartInfo(
             arguments: [
                 "log",
-                $"{baseTag}..{resolvedNewTag}",
+                $"{baseTagInfo.RefName}..{newTagInfo.RefName}",
                 "--reverse",
                 "--oneline"
             ],
@@ -129,6 +147,25 @@ public static partial class GitCliUtils
         string output = await process.StandardOutput.ReadToEndAsync();
 
         return output is not null && !string.IsNullOrWhiteSpace(output);
+    }
+
+    public static async Task<CommitInfo> GetCommitInfoAsync(string revision, string? repoPath)
+    {
+        ProcessStartInfo processStartInfo = CreateGitProcessStartInfo(
+            arguments: [
+                "log",
+                "--no-patch",
+                "--format='%h - %S - %s'",
+                revision
+            ],
+            workingDirectory: repoPath
+        );
+
+        using Process process = await RunGitProcessAsync(processStartInfo);
+
+        string output = await process.StandardOutput.ReadToEndAsync();
+
+        return new(output);
     }
 
     [GeneratedRegex(
