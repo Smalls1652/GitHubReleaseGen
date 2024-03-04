@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "2.0.0",
   "tasks": [
     {
@@ -174,7 +174,79 @@
         "cwd": "${workspaceFolder}"
       },
       "problemMatcher": "$msCompile"
-    }
+    },
+    {
+			"label": "Install gh-releasegen locally",
+			"detail": "Copy the gh-releasegen binary to the \"~/.ghreleasegen/bin\" directory.",
+			"icon": {
+				"id": "move",
+				"color": "terminal.ansiBlue"
+			},
+			"type": "process",
+			"command": "pwsh",
+			"args": [
+				"-NoLogo",
+				"-NoProfile",
+				"-File",
+				"Install-GhReleaseGen.ps1",
+				"-Configuration",
+				"${input:dotnetConfigurationPublish}",
+				"-Verbose"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": true,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": true,
+			},
+			"problemMatcher": [],
+			"dependsOn": [
+				"Publish: ConsoleApp"
+			]
+		},
+    {
+			"label": "Publish: ConsoleApp",
+			"detail": "Compile the ConsoleApp.",
+      "hide": true,
+			"icon": {
+				"id": "tools",
+				"color": "terminal.ansiYellow"
+			},
+			"type": "process",
+			"command": "dotnet",
+			"args": [
+				"publish",
+				"${workspaceFolder}/src/ConsoleApp",
+				"--configuration",
+				"${input:dotnetConfigurationPublish}",
+				"--self-contained",
+				"--runtime",
+				"${input:runtimeIdentifier}"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}",
+				"env": {
+					"GITVERSION_LOCAL_BUILD": "true"
+				}
+			},
+			"runOptions": {
+				"instanceLimit": 1
+			},
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": true
+			},
+			"problemMatcher": "$msCompile"
+		}
   ],
   "inputs": [
     {
@@ -193,6 +265,22 @@
         }
       ]
     },
+    {
+			"id": "dotnetConfigurationPublish",
+			"description": "Select a configuration for compilation.",
+			"type": "pickString",
+			"default": "Release",
+			"options": [
+				{
+					"label": "Debug",
+					"value": "Debug"
+				},
+				{
+					"label": "Release",
+					"value": "Release"
+				}
+			]
+		},
     {
       "id": "projectItem",
       "description": "Select a project.",
