@@ -12,21 +12,22 @@ public class CreateTextCommand : CliCommand
     /// </summary>
     public CreateTextCommand() : base("create-text")
     {
-        Description = "Create text for a GitHub release between a previous tag and now.";
+        Description = "Create text for a GitHub release between two commits.";
 
         Options.Add(
-            new CliOption<string>("--base-tag")
+            new CliOption<string>("--base-ref")
             {
-                Description = "The base tag to compare against.",
+                Description = "The base ref to compare against.",
                 Required = true
             }
         );
 
         Options.Add(
-            new CliOption<string>("--new-tag")
+            new CliOption<string>("--target-ref")
             {
-                Description = "The new tag to compare against.",
-                Required = true
+                Description = "The target ref to compare against.",
+                Required = true,
+                DefaultValueFactory = (defaultValue) => "HEAD"
             }
         );
 
@@ -38,7 +39,7 @@ public class CreateTextCommand : CliCommand
         );
 
         Options.Add(
-            new CliOption<string>("--repo")
+            new CliOption<string>("--repo-name")
             {
                 Description = "The repository name."
             }
