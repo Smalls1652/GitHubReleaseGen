@@ -42,15 +42,15 @@ jobs:
               if: ${{ runner.os == 'Windows' }}
               run: |
                 dotnet publish ./src/ConsoleApp/ --configuration "Release" --runtime "win-x64";
-                Remove-Item -Path "./artifacts/publish/Configurator/release_win-x64/*.pdb" -Recurse -Force -Verbose
+                Remove-Item -Path "./artifacts/publish/ConsoleApp/release_win-x64/*.pdb" -Recurse -Force -Verbose
 
             - name: Compile project (Linux)
               shell: pwsh
               if: ${{ runner.os == 'Linux' }}
               run: |
                 dotnet publish ./src/ConsoleApp/ --configuration "Release" --runtime "linux-x64";
-                Remove-Item -Path "./artifacts/publish/Configurator/release_linux-x64/*.pdb" -Recurse -Force -Verbose;
-                Remove-Item -Path "./artifacts/publish/Configurator/release_linux-x64/*.dbg" -Recurse -Force -Verbose
+                Remove-Item -Path "./artifacts/publish/ConsoleApp/release_linux-x64/*.pdb" -Recurse -Force -Verbose;
+                Remove-Item -Path "./artifacts/publish/ConsoleApp/release_linux-x64/*.dbg" -Recurse -Force -Verbose
 
             - name: Compile project (macOS)
               shell: pwsh
@@ -58,8 +58,8 @@ jobs:
               run: |
                 dotnet publish ./src/ConsoleApp/ --configuration "Release" --runtime "osx-arm64";
                 dotnet publish ./src/ConsoleApp/ --configuration "Release" --runtime "osx-x64";
-                Remove-Item -Path "./artifacts/publish/Configurator/release_osx-x64/*.dsym" -Recurse -Force -Verbose;
-                Remove-Item -Path "./artifacts/publish/Configurator/release_osx-arm64/*.dsym" -Recurse -Force -Verbose
+                Remove-Item -Path "./artifacts/publish/ConsoleApp/release_osx-x64/*.dsym" -Recurse -Force -Verbose;
+                Remove-Item -Path "./artifacts/publish/ConsoleApp/release_osx-arm64/*.dsym" -Recurse -Force -Verbose
 
             - name: Create artifact (Windows)
               uses: actions/upload-artifact@v4
