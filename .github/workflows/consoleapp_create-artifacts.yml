@@ -38,12 +38,14 @@ jobs:
               run: dotnet tool run dotnet-gitversion /updateprojectfiles
 
             - name: Compile project (Windows)
+              shell: pwsh
               if: ${{ runner.os == 'Windows' }}
               run: |
                 dotnet publish ./src/ConsoleApp/ --configuration "Release" --runtime "win-x64";
                 Remove-Item -Path "./artifacts/publish/Configurator/release_win-x64/*.pdb" -Recurse -Force -Verbose
 
             - name: Compile project (Linux)
+              shell: pwsh
               if: ${{ runner.os == 'Linux' }}
               run: |
                 dotnet publish ./src/ConsoleApp/ --configuration "Release" --runtime "linux-x64";
@@ -51,6 +53,7 @@ jobs:
                 Remove-Item -Path "./artifacts/publish/Configurator/release_linux-x64/*.dbg" -Recurse -Force -Verbose
 
             - name: Compile project (macOS)
+              shell: pwsh
               if: ${{ runner.os == 'macOS' }}
               run: |
                 dotnet publish ./src/ConsoleApp/ --configuration "Release" --runtime "osx-arm64";
