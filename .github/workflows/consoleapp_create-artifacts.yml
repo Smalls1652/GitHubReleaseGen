@@ -66,7 +66,7 @@ jobs:
               if: ${{ runner.os == 'Windows' }}
               with:
                 name: "gh-releasegen_win-x64_${{ github.ref_type == 'tag' && github.ref_name || github.sha }}"
-                path: ${{ github.workspace }}/artifacts/publish/CsvImporter/release_win-x64/**/*
+                path: ${{ github.workspace }}/artifacts/publish/ConsoleApp/release_win-x64/**/*
                 if-no-files-found: error
 
             - name: Create artifact (Linux)
@@ -74,7 +74,7 @@ jobs:
               if: ${{ runner.os == 'Linux' }}
               with:
                 name: "gh-releasegen_linux-x64_${{ github.ref_type == 'tag' && github.ref_name || github.sha }}"
-                path: ${{ github.workspace }}/artifacts/publish/CsvImporter/release_linux-x64/**/*
+                path: ${{ github.workspace }}/artifacts/publish/ConsoleApp/release_linux-x64/**/*
                 if-no-files-found: error
 
             - name: Create artifact (macOS arm64)
@@ -82,7 +82,7 @@ jobs:
               if: ${{ runner.os == 'macOS' }}
               with:
                 name: "gh-releasegen_osx-arm64_${{ github.ref_type == 'tag' && github.ref_name || github.sha }}"
-                path: ${{ github.workspace }}/artifacts/publish/CsvImporter/release_osx-arm64/**/*
+                path: ${{ github.workspace }}/artifacts/publish/ConsoleApp/release_osx-arm64/**/*
                 if-no-files-found: error
 
             - name: Create artifact (macOS x64)
@@ -90,5 +90,5 @@ jobs:
               if: ${{ runner.os == 'macOS' }}
               with:
                 name: "gh-releasegen_osx-x64_${{ github.ref_type == 'tag' && github.ref_name || github.sha }}"
-                path: ${{ github.workspace }}/artifacts/publish/CsvImporter/release_osx-x64/**/*
+                path: ${{ github.workspace }}/artifacts/publish/ConsoleApp/release_osx-x64/**/*
                 if-no-files-found: error
