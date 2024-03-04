@@ -2,6 +2,7 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Text;
 using System.Text.RegularExpressions;
+using GitHubReleaseGen.ConsoleApp.Models.Commands;
 using GitHubReleaseGen.ConsoleApp.Models.Git;
 using GitHubReleaseGen.ConsoleApp.Models.GitHub;
 using GitHubReleaseGen.ConsoleApp.Utilities;
@@ -22,21 +23,11 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
     /// <exception cref="InvalidOperationException"></exception>
     public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken = default)
     {
-        // Parse the command line arguments
-        string baseTag;
-        string newTag;
-        string? repoOwner = null;
-        string? repo = null;
-        string? localRepoPath = null;
-        bool excludeOverviewSection = ParseExcludeOverviewSection(parseResult);
-
+        // Parse the command line arguments.
+        CreateTextCommandOptions options;
         try
         {
-            baseTag = ParseBaseTag(parseResult);
-            newTag = ParseNewTag(parseResult);
-            repoOwner = ParseRepoOwner(parseResult);
-            repo = ParseRepo(parseResult);
-            localRepoPath = ParseLocalRepoPath(parseResult);
+            options = new(parseResult);
         }
         catch (Exception ex)
         {
@@ -44,8 +35,8 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
             return 1;
         }
 
-        CommitInfo baseCommitRef = new(baseTag, localRepoPath);
-        CommitInfo newCommitRef = new(newTag, localRepoPath);
+        CommitInfo baseCommitRef = new(options.BaseRef, options.LocalRepoPath);
+        CommitInfo newCommitRef = new(options.TargetRef, options.LocalRepoPath);
         try
         {
             await baseCommitRef.GetCommitInfoAsync();
@@ -62,9 +53,9 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
         try
         {
             pullRequests = await GhCliUtils.GetMergedPullRequests(
-                repoOwner: repoOwner,
-                repo: repo,
-                repoPath: localRepoPath
+                repoOwner: options.RepoOwner,
+                repo: options.RepoName,
+                repoPath: options.LocalRepoPath
             );
         }
         catch (Exception ex)
@@ -74,7 +65,7 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
         }
 
         // Get commits between the two tags.
-        CommitsCollection commitsSinceTag = new(baseCommitRef, newCommitRef, localRepoPath);
+        CommitsCollection commitsSinceTag = new(baseCommitRef, newCommitRef, options.LocalRepoPath);
         try
         {
             await commitsSinceTag.GetCommitsBetweenRefsAsync();
@@ -90,9 +81,9 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
         try
         {
             repoUrl = await GhCliUtils.GetRepoUrlAsync(
-                repoOwner: repoOwner,
-                repo: repo,
-                repoPath: localRepoPath
+                repoOwner: options.RepoOwner,
+                repo: options.RepoName,
+                repoPath: options.LocalRepoPath
             );
         }
         catch (Exception ex)
@@ -145,7 +136,7 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
 
         // Add the overview section to the release text,
         // if '--exclude-overview-section' is not provided.
-        if (!excludeOverviewSection)
+        if (!options.ExcludeOverviewSection)
         {
             releaseText.AppendLine("## Overview");
             releaseText.AppendLine("\nAdd an overview of the changes here...\n");
@@ -189,99 +180,12 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
         }
 
         // Add the full changelog section to the release text.
-        releaseText.AppendLine($"\n**Full Changelog**: [`{baseTag}..{newTag}`]({repoUrl}/compare/{baseTag}..{newTag})");
+        releaseText.AppendLine($"\n**Full Changelog**: [`{baseCommitRef.RefName}..{newCommitRef.RefName}`]({repoUrl}/compare/{baseCommitRef.RefName}..{newCommitRef.RefName})");
 
         // Write the release text to the console.
         ConsoleUtils.WriteOutput(releaseText.ToString());
 
         return 0;
-    }
-
-    /// <summary>
-    /// Parses the base tag from the parse result.
-    /// </summary>
-    /// <param name="parseResult">The parse result.</param>
-    /// <returns>The parsed base tag.</returns>
-    /// <exception cref="InvalidOperationException">The base tag was not found in the parse result.</exception>
-    private static string ParseBaseTag(ParseResult parseResult)
-    {
-        string baseTag = parseResult.GetValue<string>("--base-tag") ?? throw new InvalidOperationException("Base tag is required.");
-
-        return baseTag;
-    }
-
-    /// <summary>
-    /// Parses the new tag from the parse result.
-    /// </summary>
-    /// <param name="parseResult">The parse result.</param>
-    /// <returns>The parsed new tag.</returns>
-    /// <exception cref="InvalidOperationException">The new tag was not found in the parse result.</exception>
-    private static string ParseNewTag(ParseResult parseResult)
-    {
-        string newTag = parseResult.GetValue<string>("--new-tag") ?? throw new InvalidOperationException("New tag is required.");
-
-        return newTag;
-    }
-
-    /// <summary>
-    /// Parses the repository owner from the parse result.
-    /// </summary>
-    /// <param name="parseResult">The parse result.</param>
-    /// <returns>The parsed repository owner.</returns>
-    private static string? ParseRepoOwner(ParseResult parseResult)
-    {
-        string? owner = parseResult.GetValue<string>("--repo-owner");
-
-        return owner;
-    }
-
-    /// <summary>
-    /// Parses the repository from the parse result.
-    /// </summary>
-    /// <param name="parseResult">The parse result.</param>
-    /// <returns>The parsed repository.</returns>
-    private static string? ParseRepo(ParseResult parseResult)
-    {
-        string? repo = parseResult.GetValue<string>("--repo");
-
-        return repo;
-    }
-
-    /// <summary>
-    /// Parses the local repository path from the parse result.
-    /// </summary>
-    /// <param name="parseResult">The parse result.</param>
-    /// <returns>The parsed local repository path.</returns>
-    /// <exception cref="System.IO.IOException"></exception>
-    private static string? ParseLocalRepoPath(ParseResult parseResult)
-    {
-        string? localRepoPath = parseResult.GetValue<string>("--local-repo-path");
-
-        string? localRepoPathFull = null;
-
-        if (localRepoPath is not null)
-        {
-            localRepoPathFull = Path.GetFullPath(localRepoPath);
-
-            if (!Directory.Exists(localRepoPathFull))
-            {
-                throw new IOException("Local repository path does not exist.");
-            }
-        }
-
-        return localRepoPathFull;
-    }
-
-    /// <summary>
-    /// Parses the exclude overview section from the parse result.
-    /// </summary>
-    /// <param name="parseResult">The parse result.</param>
-    /// <returns>The parsed exclude overview section.</returns>
-    private static bool ParseExcludeOverviewSection(ParseResult parseResult)
-    {
-        bool excludeOverviewSection = parseResult.GetValue<bool>("--exclude-overview-section");
-
-        return excludeOverviewSection;
     }
 
     /// <summary>
