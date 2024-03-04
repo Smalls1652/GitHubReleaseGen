@@ -2,6 +2,7 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Text;
 using System.Text.RegularExpressions;
+using GitHubReleaseGen.ConsoleApp.Models.Git;
 using GitHubReleaseGen.ConsoleApp.Models.GitHub;
 using GitHubReleaseGen.ConsoleApp.Utilities;
 
@@ -43,6 +44,19 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
             return 1;
         }
 
+        CommitInfo baseCommitRef = new(baseTag, localRepoPath);
+        CommitInfo newCommitRef = new(newTag, localRepoPath);
+        try
+        {
+            await baseCommitRef.GetCommitInfoAsync();
+            await newCommitRef.GetCommitInfoAsync();
+        }
+        catch (Exception ex)
+        {
+            ConsoleUtils.WriteError(ex.Message);
+            return 1;
+        }
+
         // Get the merged pull requests for the repository.
         GitHubPullRequest[] pullRequests;
         try
@@ -60,19 +74,10 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
         }
 
         // Get commits between the two tags.
-        List<string> commitsSinceTag;
+        CommitsCollection commitsSinceTag = new(baseCommitRef, newCommitRef, localRepoPath);
         try
         {
-            commitsSinceTag = await GitCliUtils.GetCommitsFromTagAsync(
-                baseTag: baseTag,
-                newTag: newTag,
-                repoPath: localRepoPath
-            );
-
-            if (commitsSinceTag.Count == 0)
-            {
-                throw new InvalidOperationException("No commits found since tag.");
-            }
+            await commitsSinceTag.GetCommitsBetweenRefsAsync();
         }
         catch (Exception ex)
         {
@@ -106,7 +111,7 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
         // that have a merge commit associated with a pull request.
         GitHubPullRequest[] pullRequestsSinceTag = Array.FindAll(
             array: pullRequests,
-            match: pr => pr.MergeCommit.ShortOid is not null && commitsSinceTag.Contains(pr.MergeCommit.ShortOid)
+            match: pr => pr.MergeCommit.ShortOid is not null && commitsSinceTag.Commits.Contains(pr.MergeCommit.ShortOid)
         );
 
         Array.Sort(
