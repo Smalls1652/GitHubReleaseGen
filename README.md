@@ -1,5 +1,7 @@
 # GitHub Release Text Generator
 
+[![Build](https://github.com/Smalls1652/GitHubReleaseGen/actions/workflows/build.yml/badge.svg?branch=main&event=push)](https://github.com/Smalls1652/GitHubReleaseGen/actions/workflows/build.yml)
+
 This repo is for a CLI tool to create text for a release on GitHub.
 
 > **_"Doesn't GitHub have that built into the release page?"_**
