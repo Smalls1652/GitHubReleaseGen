@@ -70,6 +70,7 @@ public sealed partial class CommitsCollection
 
         ProcessStartInfo processStartInfo = CreateGitProcessStartInfo(
             arguments: [
+                "--no-pager",
                 "log",
                 $"{_baseCommitRef.RefName}..{_newCommitRef.RefName}",
                 "--reverse",

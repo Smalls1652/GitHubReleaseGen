@@ -65,6 +65,7 @@ public sealed partial class CommitInfo
     {
         ProcessStartInfo processStartInfo = CreateGitProcessStartInfo(
             arguments: [
+                "--no-pager",
                 "log",
                 "--format='%h - %S - %s'",
                 "-1",
