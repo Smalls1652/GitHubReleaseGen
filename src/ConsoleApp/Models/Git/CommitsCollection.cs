@@ -68,7 +68,7 @@ public sealed partial class CommitsCollection
             throw new NullReferenceException("New commit ref is null.");
         }
 
-        ProcessStartInfo processStartInfo = CreateGitProcessStartInfo(
+        using GitProcess gitProcess = new(
             arguments: [
                 "--no-pager",
                 "log",
@@ -79,9 +79,14 @@ public sealed partial class CommitsCollection
             workingDirectory: _repoPath ?? Environment.CurrentDirectory
         );
 
-        using Process process = await RunGitProcessAsync(processStartInfo);
+        await gitProcess.RunGitProcessAsync();
 
-        string output = await process.StandardOutput.ReadToEndAsync();
+        if (gitProcess.ProcessData is null)
+        {
+            throw new InvalidOperationException("The git log process is null.");
+        }
+
+        string output = await gitProcess.ProcessData.StandardOutput.ReadToEndAsync();
 
         if (_commits is null)
         {
@@ -95,49 +100,6 @@ public sealed partial class CommitsCollection
                 _commits.Add(matchItem.Groups["commit"].Value);
             }
         }
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="ProcessStartInfo"/> instance for running a 'git' command.
-    /// </summary>
-    /// <param name="arguments">Arguments to pass to the 'git' command.</param>
-    /// <param name="workingDirectory">The directory to run the 'git' command in.</param>
-    /// <returns>A new <see cref="ProcessStartInfo"/> instance.</returns>
-    private static ProcessStartInfo CreateGitProcessStartInfo(string[] arguments, string? workingDirectory)
-    {
-        return new(
-            fileName: "git",
-            arguments: arguments
-        )
-        {
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory
-        };
-    }
-
-    /// <summary>
-    /// Runs a 'git' command.
-    /// </summary>
-    /// <param name="processStartInfo">The <see cref="ProcessStartInfo"/> instance to use for running the 'git' command.</param>
-    /// <returns>An instance of <see cref="Process"/> representing the running 'git' command.</returns>
-    /// <exception cref="InvalidOperationException">Failed to start git process.</exception>
-    /// <exception cref="GitCliException">An error occurred while running the 'git' command.</exception>
-    private static async Task<Process> RunGitProcessAsync(ProcessStartInfo processStartInfo)
-    {
-        Process process = Process.Start(processStartInfo) ?? throw new InvalidOperationException("Failed to start git process.");
-
-        await process.WaitForExitAsync();
-
-        if (process.ExitCode != 0)
-        {
-            string errorOutput = await process.StandardError.ReadToEndAsync();
-
-            throw new GitCliException("An error occurred while running the 'git' command.", errorOutput, GitCliExceptionType.Unknown);
-        }
-
-        return process;
     }
 
     [GeneratedRegex(
