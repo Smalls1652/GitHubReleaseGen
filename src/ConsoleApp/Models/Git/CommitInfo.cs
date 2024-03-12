@@ -66,8 +66,8 @@ public sealed partial class CommitInfo
         ProcessStartInfo processStartInfo = CreateGitProcessStartInfo(
             arguments: [
                 "log",
-                "--no-patch",
                 "--format='%h - %S - %s'",
+                "-1",
                 _inputRef
             ],
             workingDirectory: _repoPath ?? Environment.CurrentDirectory
