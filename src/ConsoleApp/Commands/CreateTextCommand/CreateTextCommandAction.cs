@@ -180,7 +180,7 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
         }
 
         // Add the full changelog section to the release text.
-        releaseText.AppendLine($"\n**Full Changelog**: [`{baseCommitRef.RefName}..{newCommitRef.RefName}`]({repoUrl}/compare/{baseCommitRef.RefName}..{newCommitRef.RefName})");
+        releaseText.AppendLine($"\n**Full Changelog**: [`{baseCommitRef.RefName}...{newCommitRef.RefName}`]({repoUrl}/compare/{baseCommitRef.RefName}...{newCommitRef.RefName})");
 
         // Write the release text to the console.
         ConsoleUtils.WriteOutput(releaseText.ToString());
