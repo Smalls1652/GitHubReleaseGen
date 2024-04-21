@@ -207,7 +207,7 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
     }
 
     [GeneratedRegex(
-        pattern: "Bump (?'dependencyName'.+?) from (?'previousVersion'.+?) to (?'newVersion'.+?) in (?'projectPath'.+)"
+        pattern: "Bump (?'dependencyName'.+?) from (?'previousVersion'.+?) to (?'newVersion'.+?)(?>$| in (?'projectPath'.+))"
     )]
     internal static partial Regex DependencyUpdateRegex();
 }
