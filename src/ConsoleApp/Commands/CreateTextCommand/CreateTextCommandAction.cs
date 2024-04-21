@@ -98,6 +98,10 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
             "bugfix",
         ];
 
+        string[] maintenanceLabels = [
+            "maintenance"
+        ];
+
         // Filter the pull requests to only include those
         // that have a merge commit associated with a pull request.
         GitHubPullRequest[] pullRequestsSinceTag = Array.FindAll(
@@ -122,6 +126,13 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
         GitHubPullRequest[] bugFixPrs = Array.FindAll(
             array: pullRequestsSinceTag,
             match: pr => pr.Author.IsBot == false && pr.Labels.Any(label => bugLabels.Contains(label.Name) == true)
+        );
+
+        // Filter the pull requests only include those
+        // that are not from a bot and have a maintenance label.
+        GitHubPullRequest[] maintenancePrs = Array.FindAll(
+            array: pullRequestsSinceTag,
+            match: pr => pr.Author.IsBot == false && pr.Labels.Any(label => maintenanceLabels.Contains(label.Name) == true)
         );
 
         // Filter the pull requests only include those
@@ -161,6 +172,18 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
             releaseText.AppendLine("\n### 🪳 Bug Fixes\n");
 
             foreach (var prItem in bugFixPrs)
+            {
+                releaseText.AppendLine($"* {prItem.Title} by @{prItem.Author.Login} in #{prItem.Number}");
+            }
+        }
+
+        // Add the maintenance section to the release text,
+        // if there are any.
+        if (maintenancePrs.Length != 0)
+        {
+            releaseText.AppendLine("\n### 🧹 Maintenance\n");
+
+            foreach (var prItem in maintenancePrs)
             {
                 releaseText.AppendLine($"* {prItem.Title} by @{prItem.Author.Login} in #{prItem.Number}");
             }
