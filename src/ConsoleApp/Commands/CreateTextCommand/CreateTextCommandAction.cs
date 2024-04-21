@@ -200,14 +200,47 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
             return text;
         }
 
-        return DependencyUpdateRegex().Replace(
-            input: text,
-            replacement: "Bump **$1** from `$2` to `$3` in `$4`"
-        );
+        Match dependencyUpdateMatch = DependencyUpdateRegex().Match(text);
+
+        string modifiedText = text;
+
+        if (dependencyUpdateMatch.Groups["dependencyName"].Success)
+        {
+            modifiedText = modifiedText.Replace(
+                oldValue: dependencyUpdateMatch.Groups["dependencyName"].Value,
+                newValue: $"**{dependencyUpdateMatch.Groups["dependencyName"].Value}**"
+            );
+        }
+
+        if (dependencyUpdateMatch.Groups["previousVersion"].Success)
+        {
+            modifiedText = modifiedText.Replace(
+                oldValue: dependencyUpdateMatch.Groups["previousVersion"].Value,
+                newValue: $"`{dependencyUpdateMatch.Groups["previousVersion"].Value}`"
+            );
+        }
+
+        if (dependencyUpdateMatch.Groups["newVersion"].Success)
+        {
+            modifiedText = modifiedText.Replace(
+                oldValue: dependencyUpdateMatch.Groups["newVersion"].Value,
+                newValue: $"`{dependencyUpdateMatch.Groups["newVersion"].Value}`"
+            );
+        }
+
+        if (dependencyUpdateMatch.Groups["projectPath"].Success)
+        {
+            modifiedText = modifiedText.Replace(
+                oldValue: dependencyUpdateMatch.Groups["projectPath"].Value,
+                newValue: $"`{dependencyUpdateMatch.Groups["projectPath"].Value}`"
+            );
+        }
+
+        return modifiedText;
     }
 
     [GeneratedRegex(
-        pattern: "Bump (?'dependencyName'.+?) from (?'previousVersion'.+?) to (?'newVersion'.+?) in (?'projectPath'.+)"
+        pattern: "Bump (?'dependencyName'.+?) from (?'previousVersion'.+?) to (?'newVersion'.+?)(?>$| in (?'projectPath'.+))"
     )]
     internal static partial Regex DependencyUpdateRegex();
 }
