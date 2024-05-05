@@ -46,7 +46,7 @@ public sealed class CreateTextCommandOptions
     /// <summary>
     /// The local repository path.
     /// </summary>
-    public string? LocalRepoPath { get; set; }
+    public string LocalRepoPath { get; set; }
 
     /// <summary>
     /// Whether to exclude the overview section.
@@ -109,30 +109,31 @@ public sealed class CreateTextCommandOptions
     /// <param name="parseResult">The parse result from the command line.</param>
     /// <returns>The local repository path.</returns>
     /// <exception cref="DirectoryNotFoundException">Thrown when the local repository path does not exist.</exception>
-    private static string? ParseLocalRepoPathArgument(ParseResult parseResult)
+    private static string ParseLocalRepoPathArgument(ParseResult parseResult)
     {
         string? localRepoPath = parseResult.GetValue<string>("--local-repo-path");
 
-        if (localRepoPath is null)
-        {
-            RootGitDirectory rootGitDirectory = new();
-
-            return rootGitDirectory.Path;
-        }
-
-        string? localRepoPathFull = null;
+        string repoPath;
 
         if (localRepoPath is not null)
         {
-            localRepoPathFull = Path.GetFullPath(localRepoPath);
+            string localRepoPathFull = Path.GetFullPath(localRepoPath);
 
             if (!Directory.Exists(localRepoPathFull))
             {
                 throw new DirectoryNotFoundException($"The directory '{localRepoPathFull}' does not exist.");
             }
+
+            RootGitDirectory _ = new(localRepoPathFull);
+
+            repoPath = _.Path;
+        }
+        else
+        {
+            repoPath = new RootGitDirectory().Path;
         }
 
-        return localRepoPathFull;
+        return repoPath;
     }
 
     /// <summary>

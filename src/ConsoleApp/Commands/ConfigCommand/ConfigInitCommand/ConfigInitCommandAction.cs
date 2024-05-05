@@ -30,7 +30,7 @@ public sealed class ConfigInitCommandAction : AsynchronousCliAction
             return 1;
         }
 
-        string configPath = Path.Combine(options.LocalRepoPath!, ".gh-releasegen.json");
+        string configPath = Path.Combine(options.LocalRepoPath, ".gh-releasegen.json");
 
         if (File.Exists(configPath) && !options.Force)
         {
