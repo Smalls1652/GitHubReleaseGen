@@ -10,7 +10,14 @@ public sealed class RootConfig
     /// <summary>
     /// Configuration options for the labels.
     /// </summary>
+    [JsonPropertyName("labels")]
     public LabelsConfig Labels { get; set; } = new();
+
+    /// <summary>
+    /// Configuration options for the separate project label.
+    /// </summary>
+    [JsonPropertyName("separateProjectLabel")]
+    public SeparateProjectLabelConfig SeparateProjectLabel { get; set; } = new();
 
     /// <summary>
     /// Gets the configuration file.
