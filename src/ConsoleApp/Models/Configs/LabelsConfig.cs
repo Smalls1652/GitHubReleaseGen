@@ -5,6 +5,10 @@ namespace GitHubReleaseGen.ConsoleApp.Models.Configs;
 /// </summary>
 public sealed class LabelsConfig
 {
+    /*
+
+    Disabling these for now, as they are not used in the current implementation.
+
     /// <summary>
     /// Labels for features.
     /// </summary>
@@ -20,6 +24,8 @@ public sealed class LabelsConfig
     public string[] EnhancementLabels { get; set; } = [
         "enhancement",
     ];
+
+    */
 
     /// <summary>
     /// Labels for bugs.
