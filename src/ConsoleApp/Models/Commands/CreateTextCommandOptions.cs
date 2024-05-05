@@ -1,5 +1,7 @@
 using System.CommandLine;
 
+using GitHubReleaseGen.ConsoleApp.Models.Git;
+
 namespace GitHubReleaseGen.ConsoleApp.Models.Commands;
 
 /// <summary>
@@ -110,6 +112,13 @@ public sealed class CreateTextCommandOptions
     private static string? ParseLocalRepoPathArgument(ParseResult parseResult)
     {
         string? localRepoPath = parseResult.GetValue<string>("--local-repo-path");
+
+        if (localRepoPath is null)
+        {
+            RootGitDirectory rootGitDirectory = new();
+
+            return rootGitDirectory.Path;
+        }
 
         string? localRepoPathFull = null;
 
