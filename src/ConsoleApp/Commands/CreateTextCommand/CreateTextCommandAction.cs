@@ -1,7 +1,10 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Reflection.Emit;
 using System.Text;
 using System.Text.RegularExpressions;
+
+using GitHubReleaseGen.ConsoleApp.Extensions.ReleaseText;
 using GitHubReleaseGen.ConsoleApp.Models.Commands;
 using GitHubReleaseGen.ConsoleApp.Models.Configs;
 using GitHubReleaseGen.ConsoleApp.Models.Git;
@@ -120,34 +123,6 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
             comparison: (pr1, pr2) => pr1.Number.CompareTo(pr2.Number)
         );
 
-        // Filter the pull requests only include those
-        // that are not from a bot and do not have a bug label.
-        GitHubPullRequest[] pullRequestsByUser = Array.FindAll(
-            array: pullRequestsSinceTag,
-            match: pr => pr.Author.IsBot == false && !pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name))
-        );
-
-        // Filter the pull requests only include those
-        // that are not from a bot and have a bug label.
-        GitHubPullRequest[] bugFixPrs = Array.FindAll(
-            array: pullRequestsSinceTag,
-            match: pr => pr.Author.IsBot == false && pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name) == true)
-        );
-
-        // Filter the pull requests only include those
-        // that are not from a bot and have a maintenance label.
-        GitHubPullRequest[] maintenancePrs = Array.FindAll(
-            array: pullRequestsSinceTag,
-            match: pr => pr.Author.IsBot == false && pr.Labels.Any(label => config.Labels.MaintenanceLabels.Contains(label.Name) == true)
-        );
-
-        // Filter the pull requests only include those
-        // that are from the dependabot bot.
-        GitHubPullRequest[] dependencyUpdatePrs = Array.FindAll(
-            array: pullRequestsSinceTag,
-            match: pr => pr.Author.Login == "app/dependabot"
-        );
-
         // Start building the release text.
         StringBuilder releaseText = new();
 
@@ -159,54 +134,51 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
             releaseText.AppendLine("\nAdd an overview of the changes here...\n");
         }
 
-        // Add the what's changed section to the release text,
-        // if there are any.
-        if (pullRequestsByUser.Length != 0)
+        if (config.SeparateProjectLabel.Enable)
         {
-            releaseText.AppendLine("### ✍️ What's Changed\n");
-
-            foreach (var prItem in pullRequestsByUser)
+            foreach (ProjectLabelItem projectLabel in config.SeparateProjectLabel.ProjectLabels)
             {
-                releaseText.AppendLine($"* {prItem.Title} by @{prItem.Author.Login} in #{prItem.Number}");
+                GitHubPullRequest[] featureAndEnhancementPrs = GetFeatureAndEnhancementPullRequests(pullRequestsSinceTag, config, projectLabel.Label);
+                GitHubPullRequest[] bugFixPrsForProject = GetBugFixPullRequests(pullRequestsSinceTag, config, projectLabel.Label);
+                GitHubPullRequest[] maintenancePrsForProject = GetMaintenancePullRequests(pullRequestsSinceTag, config);
+
+                if (featureAndEnhancementPrs.Length == 0 && bugFixPrsForProject.Length == 0 && maintenancePrsForProject.Length == 0)
+                {
+                    continue;
+                }
+
+                releaseText.AppendLine($"### {projectLabel.Name}");
+
+                releaseText.AddWhatsChangedSection(featureAndEnhancementPrs, true);
+                releaseText.AddBugFixesSection(bugFixPrsForProject, true);
+            }
+
+            GitHubPullRequest[] otherFeatureAndEnhancementPrs = GetOtherFeatureAndEnhancementPullRequests(pullRequestsSinceTag, config);
+            GitHubPullRequest[] otherBugFixPrs = GetOtherBugFixPullRequests(pullRequestsSinceTag, config);
+
+            if (otherFeatureAndEnhancementPrs.Length != 0 || otherBugFixPrs.Length != 0)
+            {
+                releaseText.AppendLine("\n### Other");
+
+                releaseText.AddWhatsChangedSection(otherFeatureAndEnhancementPrs, true);
+                releaseText.AddBugFixesSection(otherBugFixPrs, true);
             }
         }
-
-        // Add the bug fixes section to the release text,
-        // if there are any.
-        if (bugFixPrs.Length != 0)
+        else
         {
-            releaseText.AppendLine("\n### 🪳 Bug Fixes\n");
+            GitHubPullRequest[] featureAndEnhancementPrs = GetFeatureAndEnhancementPullRequests(pullRequestsSinceTag, config, null);
+            GitHubPullRequest[] bugFixPrs = GetBugFixPullRequests(pullRequestsSinceTag, config, null);
 
-            foreach (var prItem in bugFixPrs)
-            {
-                releaseText.AppendLine($"* {prItem.Title} by @{prItem.Author.Login} in #{prItem.Number}");
-            }
+            releaseText.AddWhatsChangedSection(featureAndEnhancementPrs, false);
+            releaseText.AddBugFixesSection(bugFixPrs, false);
         }
 
-        // Add the maintenance section to the release text,
-        // if there are any.
-        if (maintenancePrs.Length != 0)
-        {
-            releaseText.AppendLine("\n### 🧹 Maintenance\n");
+        GitHubPullRequest[] maintenancePrs = GetMaintenancePullRequests(pullRequestsSinceTag, config);
+        releaseText.AddMaintenanceSection(maintenancePrs);
 
-            foreach (var prItem in maintenancePrs)
-            {
-                releaseText.AppendLine($"* {prItem.Title} by @{prItem.Author.Login} in #{prItem.Number}");
-            }
-        }
-
-        // Add the dependency updates section to the release text,
-        // if there are any.
-        if (dependencyUpdatePrs.Length != 0)
-        {
-            releaseText.AppendLine("\n### ⛓️ Dependency updates\n");
-
-            foreach (var prItem in dependencyUpdatePrs)
-            {
-                string dependencyUpdateTitle = PrettifyDependencyUpdateText(prItem.Title);
-                releaseText.AppendLine($"* {dependencyUpdateTitle} by @{prItem.Author.Login.Replace("app/", "")} in #{prItem.Number}");
-            }
-        }
+        GitHubPullRequest[] dependencyUpdatePrs = GetDependencyUpdatePullRequests(pullRequestsSinceTag, config);
+        releaseText.AddDependencyUpdatesSection(dependencyUpdatePrs);
+        
 
         // Add the full changelog section to the release text.
         releaseText.AppendLine($"\n**Full Changelog**: [`{baseCommitRef.RefName}...{newCommitRef.RefName}`]({repoUrl}/compare/{baseCommitRef.RefName}...{newCommitRef.RefName})");
@@ -218,58 +190,127 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
     }
 
     /// <summary>
-    /// Prettifies the dependency update text.
+    /// Gets the feature and enhancement pull requests.
     /// </summary>
-    /// <param name="text">The text to prettify.</param>
-    /// <returns>The prettified text.</returns>
-    private static string PrettifyDependencyUpdateText(string text)
+    /// <param name="pullRequests">The pull requests.</param>
+    /// <param name="config">The configuration.</param>
+    /// <param name="projectLabel">The project label.</param>
+    /// <returns>The feature and enhancement pull requests.</returns>
+    private static GitHubPullRequest[] GetFeatureAndEnhancementPullRequests(GitHubPullRequest[] pullRequests, RootConfig config, string? projectLabel)
     {
-        if (!DependencyUpdateRegex().IsMatch(text))
-        {
-            return text;
-        }
-
-        Match dependencyUpdateMatch = DependencyUpdateRegex().Match(text);
-
-        string modifiedText = text;
-
-        if (dependencyUpdateMatch.Groups["dependencyName"].Success)
-        {
-            modifiedText = modifiedText.Replace(
-                oldValue: dependencyUpdateMatch.Groups["dependencyName"].Value,
-                newValue: $"**{dependencyUpdateMatch.Groups["dependencyName"].Value}**"
+        return projectLabel is null
+            ? Array.FindAll(
+                array: pullRequests,
+                match: pr =>
+                    pr.Author.IsBot == false
+                    && !pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name) == true)
+            )
+            : Array.FindAll(
+                array: pullRequests,
+                match: pr =>
+                    pr.Author.IsBot == false
+                    && !pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name) == true)
+                    && pr.Labels.Any(label => label.Name == projectLabel)
             );
-        }
-
-        if (dependencyUpdateMatch.Groups["previousVersion"].Success)
-        {
-            modifiedText = modifiedText.Replace(
-                oldValue: dependencyUpdateMatch.Groups["previousVersion"].Value,
-                newValue: $"`{dependencyUpdateMatch.Groups["previousVersion"].Value}`"
-            );
-        }
-
-        if (dependencyUpdateMatch.Groups["newVersion"].Success)
-        {
-            modifiedText = modifiedText.Replace(
-                oldValue: dependencyUpdateMatch.Groups["newVersion"].Value,
-                newValue: $"`{dependencyUpdateMatch.Groups["newVersion"].Value}`"
-            );
-        }
-
-        if (dependencyUpdateMatch.Groups["projectPath"].Success)
-        {
-            modifiedText = modifiedText.Replace(
-                oldValue: dependencyUpdateMatch.Groups["projectPath"].Value,
-                newValue: $"`{dependencyUpdateMatch.Groups["projectPath"].Value}`"
-            );
-        }
-
-        return modifiedText;
     }
 
-    [GeneratedRegex(
-        pattern: "Bump (?'dependencyName'.+?) from (?'previousVersion'.+?) to (?'newVersion'.+?)(?>$| in (?'projectPath'.+))"
-    )]
-    internal static partial Regex DependencyUpdateRegex();
+    /// <summary>
+    /// Gets the other feature and enhancement pull requests.
+    /// </summary>
+    /// <param name="pullRequests">The pull requests.</param>
+    /// <param name="config">The configuration.</param>
+    /// <returns>All other feature and enhancement pull requests.</returns>
+    private static GitHubPullRequest[] GetOtherFeatureAndEnhancementPullRequests(GitHubPullRequest[] pullRequests, RootConfig config)
+    {
+        return Array.FindAll(
+            array: pullRequests,
+            match: pr =>
+                pr.Author.IsBot == false
+                && !pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name) == true)
+                && !pr.Labels.Any(label => ContainsProjectLabel(label.Name, config))
+        );
+    }
+
+    /// <summary>
+    /// Gets the bug fix pull requests.
+    /// </summary>
+    /// <param name="pullRequests">The pull requests.</param>
+    /// <param name="config">The configuration.</param>
+    /// <param name="projectLabel">The project label.</param>
+    /// <returns>The bug fix pull requests.</returns>
+    private static GitHubPullRequest[] GetBugFixPullRequests(GitHubPullRequest[] pullRequests, RootConfig config, string? projectLabel)
+    {
+        return projectLabel is null
+            ? Array.FindAll(
+                array: pullRequests,
+                match: pr =>
+                    pr.Author.IsBot == false
+                    && pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name))
+            )
+            : Array.FindAll(
+                array: pullRequests,
+                match: pr =>
+                    pr.Author.IsBot == false
+                    && pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name))
+                    && pr.Labels.Any(label => label.Name == projectLabel)
+            );
+    }
+
+    /// <summary>
+    /// Gets the other bug fix pull requests.
+    /// </summary>
+    /// <param name="pullRequests">The pull requests.</param>
+    /// <param name="config">The configuration.</param>
+    /// <returns>All other bug fix pull requests.</returns>
+    private static GitHubPullRequest[] GetOtherBugFixPullRequests(GitHubPullRequest[] pullRequests, RootConfig config)
+    {
+        return Array.FindAll(
+            array: pullRequests,
+            match: pr =>
+                pr.Author.IsBot == false
+                && pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name))
+                && !pr.Labels.Any(label => ContainsProjectLabel(label.Name, config))
+        );
+    }
+
+    /// <summary>
+    /// Gets the maintenance pull requests.
+    /// </summary>
+    /// <param name="pullRequests">The pull requests.</param>
+    /// <param name="config">The configuration.</param>
+    /// <returns>The maintenance pull requests.</returns>
+    private static GitHubPullRequest[] GetMaintenancePullRequests(GitHubPullRequest[] pullRequests, RootConfig config)
+    {
+        return Array.FindAll(
+            array: pullRequests,
+            match: pr =>
+                pr.Author.IsBot == false
+                && pr.Labels.Any(label => config.Labels.MaintenanceLabels.Contains(label.Name) == true)
+        );
+    }
+
+    /// <summary>
+    /// Gets the dependency update pull requests.
+    /// </summary>
+    /// <param name="pullRequests">The pull requests.</param>
+    /// <param name="config">The configuration.</param>
+    /// <returns>The dependency update pull requests.</returns>
+    private static GitHubPullRequest[] GetDependencyUpdatePullRequests(GitHubPullRequest[] pullRequests, RootConfig config)
+    {
+        return Array.FindAll(
+            array: pullRequests,
+            match: pr => pr.Author.Login == "app/dependabot"
+        );
+    }
+
+    /// <summary>
+    /// Determines if the project label is contained in the configuration.
+    /// </summary>
+    /// <param name="label">The label to check.</param>
+    /// <param name="config">The configuration.</param>
+    /// <returns>Whether or not the label is in the configuration.</returns>
+    private static bool ContainsProjectLabel(string label, RootConfig config)
+    {
+        return config.SeparateProjectLabel.ProjectLabels.Any(projectLabel => projectLabel.Label == label);
+    }
 }

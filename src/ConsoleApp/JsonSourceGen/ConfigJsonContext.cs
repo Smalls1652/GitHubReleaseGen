@@ -10,5 +10,7 @@ namespace GitHubReleaseGen.ConsoleApp;
 )]
 [JsonSerializable(typeof(RootConfig))]
 [JsonSerializable(typeof(LabelsConfig))]
+[JsonSerializable(typeof(SeparateProjectLabelConfig))]
+[JsonSerializable(typeof(ProjectLabelItem))]
 internal partial class ConfigJsonContext : JsonSerializerContext
 {}
