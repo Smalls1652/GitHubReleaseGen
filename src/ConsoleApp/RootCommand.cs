@@ -1,5 +1,6 @@
 using System.CommandLine;
 using GitHubReleaseGen.ConsoleApp.Commands;
+using GitHubReleaseGen.ConsoleApp.Commands.Configs;
 
 namespace GitHubReleaseGen.ConsoleApp;
 
@@ -16,5 +17,6 @@ public class RootCommand : CliRootCommand
         Description = "Easily create release notes for GitHub releases.";
 
         Add(new CreateTextCommand());
+        Add(new ConfigCommand());
     }
 }

@@ -14,6 +14,15 @@ public sealed class RootGitDirectory
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="RootGitDirectory"/> class.
+    /// </summary>
+    /// <param name="workingDirectory">The working directory.</param>
+    public RootGitDirectory(string workingDirectory)
+    {
+        Path = GetRootDirectory(workingDirectory).GetAwaiter().GetResult();
+    }
+
+    /// <summary>
     /// The path to the root directory of the Git repository.
     /// </summary>
     public string Path { get; set; } = null!;
@@ -23,14 +32,22 @@ public sealed class RootGitDirectory
     /// </summary>
     /// <returns>The path to the root directory.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the Git process data is null.</exception>
-    private async Task<string> GetRootDirectory()
+    private async Task<string> GetRootDirectory() => await GetRootDirectory(Environment.CurrentDirectory);
+
+    /// <summary>
+    /// Gets the root directory of the Git repository.
+    /// </summary>
+    /// <param name="workingDirectory">The working directory.</param>
+    /// <returns>The path to the root directory.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the Git process data is null.</exception>
+    private async Task<string> GetRootDirectory(string workingDirectory)
     {
         GitProcess gitProcess = new(
             arguments: [
                 "rev-parse",
                 "--show-toplevel"
             ],
-            workingDirectory: Environment.CurrentDirectory
+            workingDirectory: workingDirectory
         );
 
         await gitProcess.RunGitProcessAsync();

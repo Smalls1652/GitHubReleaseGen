@@ -3,6 +3,7 @@ using System.CommandLine.Invocation;
 using System.Text;
 using System.Text.RegularExpressions;
 using GitHubReleaseGen.ConsoleApp.Models.Commands;
+using GitHubReleaseGen.ConsoleApp.Models.Configs;
 using GitHubReleaseGen.ConsoleApp.Models.Git;
 using GitHubReleaseGen.ConsoleApp.Models.GitHub;
 using GitHubReleaseGen.ConsoleApp.Utilities;
@@ -28,6 +29,21 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
         try
         {
             options = new(parseResult);
+        }
+        catch (Exception ex)
+        {
+            ConsoleUtils.WriteError(ex.Message);
+            return 1;
+        }
+
+        RootConfig config;
+        try
+        {
+            config = await RootConfig.GetConfigAsync(options.LocalRepoPath);
+        }
+        catch (FileNotFoundException)
+        {
+            config = new();
         }
         catch (Exception ex)
         {
@@ -92,16 +108,6 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
             return 1;
         }
 
-        string[] bugLabels = [
-            "bug",
-            "bug fix",
-            "bugfix",
-        ];
-
-        string[] maintenanceLabels = [
-            "maintenance"
-        ];
-
         // Filter the pull requests to only include those
         // that have a merge commit associated with a pull request.
         GitHubPullRequest[] pullRequestsSinceTag = Array.FindAll(
@@ -118,21 +124,21 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
         // that are not from a bot and do not have a bug label.
         GitHubPullRequest[] pullRequestsByUser = Array.FindAll(
             array: pullRequestsSinceTag,
-            match: pr => pr.Author.IsBot == false && !pr.Labels.Any(label => bugLabels.Contains(label.Name))
+            match: pr => pr.Author.IsBot == false && !pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name))
         );
 
         // Filter the pull requests only include those
         // that are not from a bot and have a bug label.
         GitHubPullRequest[] bugFixPrs = Array.FindAll(
             array: pullRequestsSinceTag,
-            match: pr => pr.Author.IsBot == false && pr.Labels.Any(label => bugLabels.Contains(label.Name) == true)
+            match: pr => pr.Author.IsBot == false && pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name) == true)
         );
 
         // Filter the pull requests only include those
         // that are not from a bot and have a maintenance label.
         GitHubPullRequest[] maintenancePrs = Array.FindAll(
             array: pullRequestsSinceTag,
-            match: pr => pr.Author.IsBot == false && pr.Labels.Any(label => maintenanceLabels.Contains(label.Name) == true)
+            match: pr => pr.Author.IsBot == false && pr.Labels.Any(label => config.Labels.MaintenanceLabels.Contains(label.Name) == true)
         );
 
         // Filter the pull requests only include those
