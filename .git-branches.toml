@@ -41,7 +41,7 @@ ship-delete-tracking-branch = true
 # between the feature branch to ship and the main development branch
 # on the feature branch. This helps keep the main branch green.
 # But this also triggers another CI run and delays shipping.
-sync-before-ship = false
+sync-before-ship = true
 
 # Should "git sync" also fetch updates from the upstream remote?
 #
