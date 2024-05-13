@@ -2,7 +2,7 @@ using System.CommandLine;
 
 using GitHubReleaseGen.ConsoleApp.Models.Git;
 
-namespace GitHubReleaseGen.ConsoleApp.Models.Commands;
+namespace GitHubReleaseGen.ConsoleApp.Commands;
 
 /// <summary>
 /// Options for the 'create-text' command.

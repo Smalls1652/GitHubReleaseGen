@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 using GitHubReleaseGen.ConsoleApp.Extensions.ReleaseText;
-using GitHubReleaseGen.ConsoleApp.Models.Commands;
 using GitHubReleaseGen.ConsoleApp.Models.Configs;
 using GitHubReleaseGen.ConsoleApp.Models.Git;
 using GitHubReleaseGen.ConsoleApp.Models.GitHub;
