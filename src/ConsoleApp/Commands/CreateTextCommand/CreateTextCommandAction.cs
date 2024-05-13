@@ -143,18 +143,15 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
             {
                 GitHubPullRequest[] featureAndEnhancementPrs = GetFeatureAndEnhancementPullRequests(pullRequestsSinceTag, config, projectLabel.Label);
                 GitHubPullRequest[] bugFixPrsForProject = GetBugFixPullRequests(pullRequestsSinceTag, config, projectLabel.Label);
-                GitHubPullRequest[] maintenancePrsForProject = GetMaintenancePullRequests(pullRequestsSinceTag, config);
 
-                if (featureAndEnhancementPrs.Length == 0 && bugFixPrsForProject.Length == 0 && maintenancePrsForProject.Length == 0)
+                if (featureAndEnhancementPrs.Length != 0 && bugFixPrsForProject.Length != 0)
                 {
-                    continue;
+                    releaseText
+                        .AppendLine($"### {projectLabel.Name}")
+                        .AppendLine()
+                        .AddWhatsChangedSection(featureAndEnhancementPrs, true)
+                        .AddBugFixesSection(bugFixPrsForProject, true);
                 }
-
-                releaseText
-                    .AppendLine($"### {projectLabel.Name}")
-                    .AppendLine()
-                    .AddWhatsChangedSection(featureAndEnhancementPrs, true)
-                    .AddBugFixesSection(bugFixPrsForProject, true);
             }
 
             GitHubPullRequest[] otherFeatureAndEnhancementPrs = GetOtherFeatureAndEnhancementPullRequests(pullRequestsSinceTag, config);
