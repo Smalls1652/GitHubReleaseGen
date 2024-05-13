@@ -44,6 +44,35 @@ public sealed class GitTags
     }
 
     /// <summary>
+    /// Get the latest tags in the Git repository.
+    /// </summary>
+    /// <param name="count">The last number of tags to get.</param>
+    /// <returns>The latest tags in the Git repository.</returns>
+    public string[] GetLatestTags(int count = 4)
+    {
+        if (Tags.Length == 1)
+        {
+            return Tags;
+        }
+
+        int tagCount = Tags.Length < count
+            ? Tags.Length
+            : count;
+
+        return Tags[Range.EndAt(tagCount)];
+    }
+
+    /// <summary>
+    /// Find tags in the Git repository.
+    /// </summary>
+    /// <param name="input">The input to search for in the tags.</param>
+    /// <returns>The tags that contain the input.</returns>
+    public string[] FindTags(string input)
+    {
+        return Array.FindAll(Tags, item => item.Contains(input));
+    }
+
+    /// <summary>
     /// Gets all tags in the Git repository.
     /// </summary>
     /// <returns>The all tags in the Git repository</returns>
