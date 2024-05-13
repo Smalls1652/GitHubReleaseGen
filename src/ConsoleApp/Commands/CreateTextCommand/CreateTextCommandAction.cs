@@ -130,8 +130,11 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
         // if '--exclude-overview-section' is not provided.
         if (!options.ExcludeOverviewSection)
         {
-            releaseText.AppendLine("## Overview");
-            releaseText.AppendLine("\nAdd an overview of the changes here...\n");
+            releaseText
+                .AppendLine("## Overview")
+                .AppendLine()
+                .AppendLine("Add an overview of the changes here...")
+                .AppendLine();
         }
 
         if (config.SeparateProjectLabel.Enable)
@@ -147,10 +150,11 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
                     continue;
                 }
 
-                releaseText.AppendLine($"### {projectLabel.Name}");
-
-                releaseText.AddWhatsChangedSection(featureAndEnhancementPrs, true);
-                releaseText.AddBugFixesSection(bugFixPrsForProject, true);
+                releaseText
+                    .AppendLine($"### {projectLabel.Name}")
+                    .AppendLine()
+                    .AddWhatsChangedSection(featureAndEnhancementPrs, true)
+                    .AddBugFixesSection(bugFixPrsForProject, true);
             }
 
             GitHubPullRequest[] otherFeatureAndEnhancementPrs = GetOtherFeatureAndEnhancementPullRequests(pullRequestsSinceTag, config);
@@ -158,10 +162,11 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
 
             if (otherFeatureAndEnhancementPrs.Length != 0 || otherBugFixPrs.Length != 0)
             {
-                releaseText.AppendLine("\n### Other");
-
-                releaseText.AddWhatsChangedSection(otherFeatureAndEnhancementPrs, true);
-                releaseText.AddBugFixesSection(otherBugFixPrs, true);
+                releaseText
+                    .AppendLine("### Other")
+                    .AppendLine()
+                    .AddWhatsChangedSection(otherFeatureAndEnhancementPrs, true)
+                    .AddBugFixesSection(otherBugFixPrs, true);
             }
         }
         else
@@ -169,19 +174,22 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
             GitHubPullRequest[] featureAndEnhancementPrs = GetFeatureAndEnhancementPullRequests(pullRequestsSinceTag, config, null);
             GitHubPullRequest[] bugFixPrs = GetBugFixPullRequests(pullRequestsSinceTag, config, null);
 
-            releaseText.AddWhatsChangedSection(featureAndEnhancementPrs, false);
-            releaseText.AddBugFixesSection(bugFixPrs, false);
+            releaseText
+                .AddWhatsChangedSection(featureAndEnhancementPrs, false)
+                .AddBugFixesSection(bugFixPrs, false);
         }
 
         GitHubPullRequest[] maintenancePrs = GetMaintenancePullRequests(pullRequestsSinceTag, config);
-        releaseText.AddMaintenanceSection(maintenancePrs);
+        releaseText
+            .AddMaintenanceSection(maintenancePrs);
 
         GitHubPullRequest[] dependencyUpdatePrs = GetDependencyUpdatePullRequests(pullRequestsSinceTag, config);
-        releaseText.AddDependencyUpdatesSection(dependencyUpdatePrs);
+        releaseText
+            .AddDependencyUpdatesSection(dependencyUpdatePrs);
 
 
         // Add the full changelog section to the release text.
-        releaseText.AppendLine($"\n**Full Changelog**: [`{baseCommitRef.RefName}...{newCommitRef.RefName}`]({repoUrl}/compare/{baseCommitRef.RefName}...{newCommitRef.RefName})");
+        releaseText.AppendLine($"**Full Changelog**: [`{baseCommitRef.RefName}...{newCommitRef.RefName}`]({repoUrl}/compare/{baseCommitRef.RefName}...{newCommitRef.RefName})");
 
         // Write the release text to the console.
         ConsoleUtils.WriteOutput(releaseText.ToString());

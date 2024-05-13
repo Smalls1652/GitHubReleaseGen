@@ -21,12 +21,16 @@ internal static partial class StringBuilderExtensions
     {
         if (pullRequests.Length != 0)
         {
-            stringBuilder.AppendLine(!isSeparateProject ? "### ✍️ What's Changed\n" : "\n#### ✍️ What's Changed\n");
+            stringBuilder
+                .AppendLine(!isSeparateProject ? "### ✍️ What's Changed" : "#### ✍️ What's Changed")
+                .AppendLine();
 
             foreach (var prItem in pullRequests)
             {
                 stringBuilder.AppendLine($"* {prItem.Title} by @{prItem.Author.Login} in #{prItem.Number}");
             }
+
+            stringBuilder.AppendLine();
         }
 
         return stringBuilder;
@@ -43,12 +47,16 @@ internal static partial class StringBuilderExtensions
     {
         if (pullRequests.Length != 0)
         {
-            stringBuilder.AppendLine(!isSeparateProject ? "### 🪳 Bug Fixes\n" : "\n#### 🪳 Bug Fixes\n");
+            stringBuilder
+                .AppendLine(!isSeparateProject ? "### 🪳 Bug Fixes" : "#### 🪳 Bug Fixes")
+                .AppendLine();
 
             foreach (var prItem in pullRequests)
             {
                 stringBuilder.AppendLine($"* {prItem.Title} by @{prItem.Author.Login} in #{prItem.Number}");
             }
+
+            stringBuilder.AppendLine();
         }
 
         return stringBuilder;
@@ -64,12 +72,16 @@ internal static partial class StringBuilderExtensions
     {
         if (pullRequests.Length != 0)
         {
-            stringBuilder.AppendLine("\n### 🧹 Maintenance\n");
+            stringBuilder
+                .AppendLine("### 🧹 Maintenance")
+                .AppendLine();
 
             foreach (var prItem in pullRequests)
             {
                 stringBuilder.AppendLine($"* {prItem.Title} by @{prItem.Author.Login} in #{prItem.Number}");
             }
+
+            stringBuilder.AppendLine();
         }
 
         return stringBuilder;
@@ -85,13 +97,17 @@ internal static partial class StringBuilderExtensions
     {
         if (pullRequests.Length != 0)
         {
-            stringBuilder.AppendLine("\n### ⛓️ Dependency updates\n");
+            stringBuilder
+                .AppendLine("### ⛓️ Dependency updates")
+                .AppendLine();
 
             foreach (var prItem in pullRequests)
             {
                 string dependencyUpdateTitle = PrettifyDependencyUpdateText(prItem.Title);
                 stringBuilder.AppendLine($"* {dependencyUpdateTitle} by @{prItem.Author.Login.Replace("app/", "")} in #{prItem.Number}");
             }
+
+            stringBuilder.AppendLine();
         }
 
         return stringBuilder;
