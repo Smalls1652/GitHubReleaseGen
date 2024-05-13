@@ -78,7 +78,7 @@ public sealed class CreateTextCommandOptions
 
         return targetRef;
     }
-    
+
     /// <summary>
     /// Parse the '--repo-owner' argument from the command line.
     /// </summary>

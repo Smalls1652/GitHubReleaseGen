@@ -1,4 +1,5 @@
 using System.Diagnostics;
+
 using GitHubReleaseGen.ConsoleApp.Models.GitHub;
 
 namespace GitHubReleaseGen.ConsoleApp.Utilities;
@@ -26,9 +27,9 @@ public static class GhCliUtils
     public static async Task<GitHubPullRequest[]> GetMergedPullRequests(string? repoOwner, string? repo, string? repoPath)
     {
         string[] processArgs = repoOwner is null && repo is null
-            ? [ "pr", "list", "--state", "merged", "--json", "number,title,mergeCommit,author,labels" ]
-            : [ "pr", "list", "--state", "merged", "--json", "number,title,mergeCommit,author,labels", "--repo", $"{repoOwner}/{repo}" ];
-        
+            ? ["pr", "list", "--state", "merged", "--json", "number,title,mergeCommit,author,labels"]
+            : ["pr", "list", "--state", "merged", "--json", "number,title,mergeCommit,author,labels", "--repo", $"{repoOwner}/{repo}"];
+
         ProcessStartInfo startInfo = new(
             fileName: "gh",
             arguments: processArgs
@@ -69,9 +70,9 @@ public static class GhCliUtils
     public static async Task<string> GetRepoUrlAsync(string? repoOwner, string? repo, string? repoPath)
     {
         string[] processArgs = repoOwner is null && repo is null
-            ? [ "repo", "view", "--json", "url" ]
-            : [ "repo", "view", "--json", "url", $"{repoOwner}/{repo}" ];
-        
+            ? ["repo", "view", "--json", "url"]
+            : ["repo", "view", "--json", "url", $"{repoOwner}/{repo}"];
+
         ProcessStartInfo startInfo = new(
             fileName: "gh",
             arguments: processArgs
@@ -90,7 +91,7 @@ public static class GhCliUtils
             utf8Json: process.StandardOutput.BaseStream,
             jsonTypeInfo: GitHubApiJsonContext.Default.GitHubRepo
         ) ?? throw new InvalidOperationException("Failed to deserialize gh repo view.");
-        
+
         return githubRepo.Url;
     }
 }

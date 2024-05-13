@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+
 using GitHubReleaseGen.ConsoleApp;
 
 CliConfiguration cliConfig = new(

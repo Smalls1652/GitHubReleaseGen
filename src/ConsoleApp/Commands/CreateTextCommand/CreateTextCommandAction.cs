@@ -178,7 +178,7 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
 
         GitHubPullRequest[] dependencyUpdatePrs = GetDependencyUpdatePullRequests(pullRequestsSinceTag, config);
         releaseText.AddDependencyUpdatesSection(dependencyUpdatePrs);
-        
+
 
         // Add the full changelog section to the release text.
         releaseText.AppendLine($"\n**Full Changelog**: [`{baseCommitRef.RefName}...{newCommitRef.RefName}`]({repoUrl}/compare/{baseCommitRef.RefName}...{newCommitRef.RefName})");

@@ -10,4 +10,4 @@ namespace GitHubReleaseGen.ConsoleApp;
 [JsonSerializable(typeof(GitHubUser))]
 [JsonSerializable(typeof(GitHubRepo))]
 internal partial class GitHubApiJsonContext : JsonSerializerContext
-{}
+{ }
