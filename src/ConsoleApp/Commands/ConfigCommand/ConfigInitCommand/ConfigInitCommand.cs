@@ -14,20 +14,47 @@ public sealed class ConfigInitCommand : CliCommand
     {
         Description = "Initializes the configuration file.";
 
-        Options.Add(
+        Options
+            .AddLocalRepoPathOption()
+            .AddForceOption();
+
+        Action = new ConfigInitCommandAction();
+    }
+}
+
+file static class ConfigInitCommandExtensions
+{
+    /// <summary>
+    /// Add the CLI option <c>--local-repo-path</c> to the <see cref="IList{CliOption}"/>.
+    /// </summary>
+    /// <param name="options">The <see cref="IList{CliOption}"/> to add the option to.</param>
+    /// <returns>The <see cref="IList{CliOption}"/> for chaining.</returns>
+    public static IList<CliOption> AddLocalRepoPathOption(this IList<CliOption> options)
+    {
+        options.Add(
             new CliOption<string>("--local-repo-path")
             {
                 Description = "The local path to the repository."
             }
         );
 
-        Options.Add(
+        return options;
+    }
+
+    /// <summary>
+    /// Add the CLI option <c>--force</c> to the <see cref="IList{CliOption}"/>.
+    /// </summary>
+    /// <param name="options">The <see cref="IList{CliOption}"/> to add the option to.</param>
+    /// <returns>The <see cref="IList{CliOption}"/> for chaining.</returns>
+    public static IList<CliOption> AddForceOption(this IList<CliOption> options)
+    {
+        options.Add(
             new CliOption<bool>("--force")
             {
                 Description = "Force the initialization of the configuration file."
             }
         );
 
-        Action = new ConfigInitCommandAction();
+        return options;
     }
 }
