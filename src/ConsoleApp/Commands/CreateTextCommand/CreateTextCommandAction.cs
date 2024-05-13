@@ -203,13 +203,13 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
                 array: pullRequests,
                 match: pr =>
                     pr.Author.IsBot == false
-                    && !pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name) == true)
+                    && !pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name) || config.Labels.MaintenanceLabels.Contains(label.Name))
             )
             : Array.FindAll(
                 array: pullRequests,
                 match: pr =>
                     pr.Author.IsBot == false
-                    && !pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name) == true)
+                    && !pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name) || config.Labels.MaintenanceLabels.Contains(label.Name))
                     && pr.Labels.Any(label => label.Name == projectLabel)
             );
     }
@@ -226,7 +226,7 @@ public partial class CreateTextCommandAction : AsynchronousCliAction
             array: pullRequests,
             match: pr =>
                 pr.Author.IsBot == false
-                && !pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name) == true)
+                && !pr.Labels.Any(label => config.Labels.BugLabels.Contains(label.Name) || config.Labels.MaintenanceLabels.Contains(label.Name))
                 && !pr.Labels.Any(label => ContainsProjectLabel(label.Name, config))
         );
     }
