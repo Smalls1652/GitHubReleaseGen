@@ -34,8 +34,10 @@ public class CreateTextCommand : CliCommand
 file static class CreateTextCommandExtensions
 {
     /// <summary>
-    /// Add the CLI option '--base-ref' to the <see cref="IList{CliOption}"/>.
+    /// Add the CLI option <c>--base-ref</c> to the <see cref="IList{CliOption}"/>.
     /// </summary>
+    /// <param name="options">The <see cref="IList{CliOption}"/> to add the option to.</param>
+    /// <param name="gitTags">The current repo's tags.</param>
     /// <returns>The <see cref="IList{CliOption}"/> for chaining.</returns>
     public static IList<CliOption> AddBaseRefOption(this IList<CliOption> options, GitTags gitTags)
     {
@@ -74,8 +76,10 @@ file static class CreateTextCommandExtensions
     }
 
     /// <summary>
-    /// Add the CLI option '--target-ref' to the <see cref="IList{CliOption}"/>.
+    /// Add the CLI option <c>--target-ref</c> to the <see cref="IList{CliOption}"/>.
     /// </summary>
+    /// <param name="options">The <see cref="IList{CliOption}"/> to add the option to.</param>
+    /// <param name="gitTags">The current repo's tags.</param>
     /// <returns>The <see cref="IList{CliOption}"/> for chaining.</returns>
     public static IList<CliOption> AddTargetRefOption(this IList<CliOption> options, GitTags gitTags)
     {
@@ -108,8 +112,9 @@ file static class CreateTextCommandExtensions
     }
 
     /// <summary>
-    /// Add the CLI option '--repo-owner' to the <see cref="IList{CliOption}"/>.
+    /// Add the CLI option <c>--repo-owner</c> to the <see cref="IList{CliOption}"/>.
     /// </summary>
+    /// <param name="options">The <see cref="IList{CliOption}"/> to add the option to.</param>
     /// <returns>The <see cref="IList{CliOption}"/> for chaining.</returns>
     public static IList<CliOption> AddRepoOwnerOption(this IList<CliOption> options)
     {
@@ -124,8 +129,9 @@ file static class CreateTextCommandExtensions
     }
 
     /// <summary>
-    /// Add the CLI option '--repo-name' to the <see cref="IList{CliOption}"/>.
+    /// Add the CLI option <c>--repo-name</c> to the <see cref="IList{CliOption}"/>.
     /// </summary>
+    /// <param name="options">The <see cref="IList{CliOption}"/> to add the option to.</param>
     /// <returns>The <see cref="IList{CliOption}"/> for chaining.</returns>
     public static IList<CliOption> AddRepoNameOption(this IList<CliOption> options)
     {
@@ -140,8 +146,9 @@ file static class CreateTextCommandExtensions
     }
 
     /// <summary>
-    /// Add the CLI option '--local-repo-path' to the <see cref="IList{CliOption}"/>.
+    /// Add the CLI option <c>--local-repo-path</c> to the <see cref="IList{CliOption}"/>.
     /// </summary>
+    /// <param name="options">The <see cref="IList{CliOption}"/> to add the option to.</param>
     /// <returns>The <see cref="IList{CliOption}"/> for chaining.</returns>
     public static IList<CliOption> AddLocalRepoPathOption(this IList<CliOption> options)
     {
@@ -156,8 +163,9 @@ file static class CreateTextCommandExtensions
     }
 
     /// <summary>
-    /// Add the CLI option '--exclude-overview-section' to the <see cref="IList{CliOption}"/>.
+    /// Add the CLI option <c>--exclude-overview-section</c> to the <see cref="IList{CliOption}"/>.
     /// </summary>
+    /// <param name="options">The <see cref="IList{CliOption}"/> to add the option to.</param>
     /// <returns>The <see cref="IList{CliOption}"/> for chaining.</returns>
     public static IList<CliOption> AddExcludeOverviewSectionOption(this IList<CliOption> options)
     {
