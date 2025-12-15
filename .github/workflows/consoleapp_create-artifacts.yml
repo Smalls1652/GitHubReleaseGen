@@ -62,7 +62,7 @@ jobs:
                 Remove-Item -Path "./artifacts/publish/ConsoleApp/release_osx-arm64/*.dsym" -Recurse -Force -Verbose
 
             - name: Create artifact (Windows)
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v6
               if: ${{ runner.os == 'Windows' }}
               with:
                 name: "gh-releasegen_win-x64_${{ github.ref_type == 'tag' && github.ref_name || github.sha }}"
@@ -70,7 +70,7 @@ jobs:
                 if-no-files-found: error
 
             - name: Create artifact (Linux)
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v6
               if: ${{ runner.os == 'Linux' }}
               with:
                 name: "gh-releasegen_linux-x64_${{ github.ref_type == 'tag' && github.ref_name || github.sha }}"
@@ -78,7 +78,7 @@ jobs:
                 if-no-files-found: error
 
             - name: Create artifact (macOS arm64)
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v6
               if: ${{ runner.os == 'macOS' }}
               with:
                 name: "gh-releasegen_osx-arm64_${{ github.ref_type == 'tag' && github.ref_name || github.sha }}"
@@ -86,7 +86,7 @@ jobs:
                 if-no-files-found: error
 
             - name: Create artifact (macOS x64)
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v6
               if: ${{ runner.os == 'macOS' }}
               with:
                 name: "gh-releasegen_osx-x64_${{ github.ref_type == 'tag' && github.ref_name || github.sha }}"
